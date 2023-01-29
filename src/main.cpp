@@ -29,6 +29,9 @@ void setup()
   Wire.begin();
 
   Serial.begin(115200);
+
+  // changed something
+  Serial.println('Hi!');
   Serial.println("Alarm from RTC Example");
 
   if (rtc.begin() == false)
