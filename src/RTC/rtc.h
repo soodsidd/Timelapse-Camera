@@ -3,7 +3,7 @@
 
 #include <SparkFun_RV8803.h> //Get the library here:http://librarymanager/All#SparkFun_RV-8803
 
-
+// #define SETTIME=True
 
 extern RV8803 rtc;
 void rtcConnect();

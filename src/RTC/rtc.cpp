@@ -1,6 +1,7 @@
 #include <RTC/rtc.h>
 
 RV8803 rtc;
+const bool SETTIME=false;
 
 void rtcConnect(){
   Serial.println("Connecting to RTC");
@@ -11,6 +12,13 @@ void rtcConnect(){
     while(1);
   }
   Serial.println("RTC online!");
+  if (SETTIME){
+    if (rtc.setToCompilerTime() == false)
+        Serial.println("Something went wrong setting the time");
+    else
+        Serial.println("New time set!");
+  }
+
   
   rtc.disableAllInterrupts();
   rtc.clearAllInterruptFlags();
