@@ -24,7 +24,7 @@
 RV8803 rtc;
 
 
-#define MINUTE_ALARM_ENABLE true
+#define MINUTE_ALARM_ENABLE false
 #define HOUR_ALARM_ENABLE false
 #define WEEKDAY_ALARM_ENABLE false
 #define DATE_ALARM_ENABLE false
@@ -34,12 +34,14 @@ const int INT_PIN=2;
 
 void setAlarm(){
   Serial.println(rtc.getInterruptFlag(FLAG_ALARM));
-  rtc.disableHardwareInterrupt(ALARM_INTERRUPT);
+  // delay(1000);
+  rtc.disableAllInterrupts();
   rtc.clearInterruptFlag(FLAG_ALARM);
   Serial.println(rtc.getInterruptFlag(FLAG_ALARM));
-
-  delay(1000);
+  rtc.clearAllInterruptFlags();//Clear all flags in case any interrupts have occurred.
+  // rtc.setPeriodicTimeUpdateFrequency(TIME_UPDATE_1_SECOND); //Can also use TIME_UPDATE_1_MINUTE (TIME_UPDATE_1_SECOND = false, TIME_UPDATE_1_MINUTE = true)
   rtc.setItemsToMatchForAlarm(MINUTE_ALARM_ENABLE, HOUR_ALARM_ENABLE, WEEKDAY_ALARM_ENABLE, DATE_ALARM_ENABLE); //The alarm interrupt compares the alarm interrupt registers with the current time registers. We must choose which registers we want to compare by setting bits to true or false
+  // rtc.enableHardwareInterrupt(ALARM_INTERRUPT); //The update interrupt needs to have the hardware interrupt enabled to function
   rtc.updateTime();
   int minutes=rtc.getMinutes();
   Serial.println("Current minutes: " + String(minutes));
@@ -63,18 +65,22 @@ void setAlarm(){
 }
 
 void wakeup(){
-
+  // do nothing
+  // digitalWrite(LED_BUILTIN, HIGH);
+  // delay(500);
+  // digitalWrite(LED_BUILTIN,LOW);
 }
 
 void sleepmcu(){
+  Serial.println("Sleeping now");
+  Serial.println(digitalPinToInterrupt(INT_PIN));
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
-  attachInterrupt(digitalPinToInterrupt(INT_PIN), wakeup, LOW);
-  Serial.println("Sleeping now");
+  attachInterrupt(2, wakeup, LOW);
   sleep_cpu();
-  Serial.println("I am awake");
   sleep_disable();
-  detachInterrupt(digitalPinToInterrupt(INT_PIN));
+  detachInterrupt(2);
+  // detachInterrupt(digitalPinToInterrupt(INT_PIN));
 }
 
 void setup()
@@ -94,10 +100,11 @@ void setup()
   Serial.println("RTC online!");
   
   rtc.disableAllInterrupts();
-  rtc.clearAllInterruptFlags();
+  // rtc.clearAllInterruptFlags();
 
   pinMode(INT_PIN, INPUT_PULLUP);
-
+  // detachInterrupt(digitalPinToInterrupt(INT_PIN));
+  rtc.disableHardwareInterrupt(ALARM_INTERRUPT);
   setAlarm();
   sleepmcu();
 }
@@ -109,7 +116,7 @@ void loop()
   Serial.println("Im awake!");
 
   // rtc.disableAllInterrupts();
-  // rtc.disableHardwareInterrupt(ALARM_INTERRUPT);
+  rtc.disableHardwareInterrupt(ALARM_INTERRUPT);
   // rtc.clearInterruptFlag(FLAG_ALARM);
 
 
