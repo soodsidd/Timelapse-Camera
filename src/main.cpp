@@ -20,22 +20,37 @@
 
 #include <RTC/rtc.h>
 #include <MyArduino/myArduino.h>
+#include <mySDCard/mySD.h>
+
+const int chipSelect=10;
+MySDClass mysd(chipSelect);
+
 
 const int INT_PIN=2;
 
-const int MININTERVAL=1;
+const int MININTERVAL=0;
+const int HOURINTERVAL=1;
+const int DAYINTERVAL=0;
 
-void blink(){
+int loopnumber=0;
+
+void wakeuproutine(){
   digitalWrite(LED_BUILTIN, HIGH);
   delay(1000);
   digitalWrite(LED_BUILTIN, LOW);
   delay(1000);
+  mysd.writeData("Loop number"+String(loopnumber));
+  mysd.closeFile();
+
 }
 
 void setup()
 {
   Wire.begin();
   Serial.begin(115200);
+  pinMode(chipSelect,OUTPUT);
+  
+  mysd.begin();
 
   rtcConnect();
   pinMode(INT_PIN, INPUT_PULLUP);
@@ -44,9 +59,12 @@ void setup()
 
 void loop()
 {
-  setAlarmInterval(MININTERVAL,0,0);
-  blink();
-  sleepmcu(INT_PIN);
+  loopnumber+=1;
 
+
+  setAlarmInterval(MININTERVAL,HOURINTERVAL,DAYINTERVAL);
+  wakeuproutine();
+  sleepmcu(INT_PIN);
+  
 }
 
