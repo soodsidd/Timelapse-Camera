@@ -17,107 +17,36 @@
     Open the serial monitor at 115200 baud
 */
 
-#include <SparkFun_RV8803.h> //Get the library here:http://librarymanager/All#SparkFun_RV-8803
-#include <avr/sleep.h>
-#include <avr/interrupt.h>
 
-RV8803 rtc;
-
-
-#define MINUTE_ALARM_ENABLE true
-#define HOUR_ALARM_ENABLE false
-#define WEEKDAY_ALARM_ENABLE false
-#define DATE_ALARM_ENABLE false
+#include <RTC/rtc.h>
+#include <MyArduino/myArduino.h>
 
 const int INT_PIN=2;
 
+const int MININTERVAL=1;
 
-void setAlarm(){
-  Serial.println(rtc.getInterruptFlag(FLAG_ALARM));
-  rtc.disableHardwareInterrupt(ALARM_INTERRUPT);
-  rtc.clearInterruptFlag(FLAG_ALARM);
-  Serial.println(rtc.getInterruptFlag(FLAG_ALARM));
-
+void blink(){
+  digitalWrite(LED_BUILTIN, HIGH);
   delay(1000);
-  rtc.setItemsToMatchForAlarm(MINUTE_ALARM_ENABLE, HOUR_ALARM_ENABLE, WEEKDAY_ALARM_ENABLE, DATE_ALARM_ENABLE); //The alarm interrupt compares the alarm interrupt registers with the current time registers. We must choose which registers we want to compare by setting bits to true or false
-  rtc.updateTime();
-  int minutes=rtc.getMinutes();
-  Serial.println("Current minutes: " + String(minutes));
-
-
-
-  // Serial.println(minutes);
-  int alarmMinute=minutes+1;
-  
-  if (alarmMinute>=60){
-    alarmMinute=60;
-  }
-
-  Serial.println(alarmMinute);
-
-  rtc.setAlarmMinutes(alarmMinute);
-  rtc.setAlarmHours(0);
-  rtc.setAlarmWeekday(MONDAY);
-  rtc.enableHardwareInterrupt(ALARM_INTERRUPT);
-
-}
-
-void wakeup(){
-
-}
-
-void sleepmcu(){
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  sleep_enable();
-  attachInterrupt(digitalPinToInterrupt(INT_PIN), wakeup, LOW);
-  Serial.println("Sleeping now");
-  sleep_cpu();
-  Serial.println("I am awake");
-  sleep_disable();
-  detachInterrupt(digitalPinToInterrupt(INT_PIN));
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
 }
 
 void setup()
 {
   Wire.begin();
-
   Serial.begin(115200);
 
-  // changed something
-  Serial.println("Alarm from RTC Example");
-
-  if (rtc.begin() == false)
-  {
-    Serial.println("Device not found. Please check wiring. Freezing.");
-    while(1);
-  }
-  Serial.println("RTC online!");
-  
-  rtc.disableAllInterrupts();
-  rtc.clearAllInterruptFlags();
-
+  rtcConnect();
   pinMode(INT_PIN, INPUT_PULLUP);
-
-  setAlarm();
-  sleepmcu();
 }
 
 
 void loop()
 {
-  // rtc.enableHardwareInterrupt(ALARM_INTERRUPT);
-  Serial.println("Im awake!");
-
-  // rtc.disableAllInterrupts();
-  // rtc.disableHardwareInterrupt(ALARM_INTERRUPT);
-  // rtc.clearInterruptFlag(FLAG_ALARM);
-
-
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_BUILTIN,LOW);
-  setAlarm();
-  sleepmcu();
+  setAlarmInterval(MININTERVAL,0,0);
+  blink();
+  sleepmcu(INT_PIN);
 
 }
 
