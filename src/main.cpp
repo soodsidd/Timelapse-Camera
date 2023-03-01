@@ -37,9 +37,9 @@ int loopnumber=0;
 void wakeuproutine(){
   digitalWrite(LED_BUILTIN, HIGH);
   delay(1000);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, LOW);  
   delay(1000);
-  mysd.writeData("Loop number"+String(loopnumber));
+  mysd.writeData("Loop number"+String(loopnumber*MININTERVAL));
   mysd.closeFile();
 
 }
@@ -59,7 +59,7 @@ void setup()
 
 void loop()
 {
-  loopnumber+=1;
+  loopnumber+=MININTERVAL;
 
 
   setAlarmInterval(MININTERVAL,HOURINTERVAL,DAYINTERVAL);

@@ -19,7 +19,7 @@ void rtcConnect(){
         Serial.println("New time set!");
   }
 
-  
+  rtc.set24Hour();
   rtc.disableAllInterrupts();
   rtc.clearAllInterruptFlags();
 }
